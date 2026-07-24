@@ -42,6 +42,16 @@ class COCO:
             assert type(dataset)==dict, 'annotation file format {} not supported'.format(type(dataset))
             print('Done (t={:0.2f}s)'.format(time.time()- tic))
             self.dataset = dataset
+            # Pre-build full indices for fast lookups
+            print('building full annotation index...')
+            self._img_id_to_anns = defaultdict(list)
+            self._cat_id_to_anns = defaultdict(list)  # cat_id -> [img_id]
+            self._cat_id_anns = defaultdict(list)     # cat_id -> [ann]
+            for ann in self.dataset['annotations']:
+                self._img_id_to_anns[ann['image_id']].append(ann)
+                self._cat_id_to_anns[ann['category_id']].append(ann['image_id'])
+                self._cat_id_anns[ann['category_id']].append(ann)
+            print('Done.')
             self.createIndex(args, cls_order, phase_idx, incremental, incremental_val, val_each_phase, balanced_ft, tfs_or_tfh, num_of_phases, cls_per_phase, seed_data)
 
     def createIndex(self, args, cls_order, phase_idx, incremental, incremental_val, val_each_phase, balanced_ft, tfs_or_tfh, num_of_phases, cls_per_phase, seed_data):

@@ -391,13 +391,14 @@ class PostProcess(nn.Module):
     """ This module converts the model's output into the format expected by the coco api"""
 
     @torch.no_grad()
-    def forward(self, outputs, target_sizes, topk=100, distillation=False):
+    def forward(self, outputs, target_sizes, score_threshold=0.0, distillation=False, topk=100):
         """ Perform the computation
         Parameters:
             outputs: raw outputs of the model
             target_sizes: tensor of dimension [batch_size x 2] containing the size of each images of the batch
-                          For evaluation, this must be the original image size (before any data augmentation)
-                          For visualization, this should be the image size after data augment, but before padding
+            score_threshold: keep all predictions with max score above this threshold
+            distillation: whether this is called for teacher pseudo-label generation
+            topk: number of top scoring predictions when score_threshold is not used
         """
         out_logits, out_bbox = outputs['pred_logits'], outputs['pred_boxes']
 
@@ -405,24 +406,34 @@ class PostProcess(nn.Module):
         assert target_sizes.shape[1] == 2
 
         prob = out_logits.sigmoid()
-        topk_values, topk_indexes = torch.topk(prob.view(out_logits.shape[0], -1), topk, dim=1)
-        scores = topk_values
-        topk_boxes = topk_indexes // out_logits.shape[2]
-        labels = topk_indexes % out_logits.shape[2]
+        scores, labels = prob.max(-1)
+
+        if score_threshold > 0:
+            valid = scores > score_threshold
+        else:
+            _, topk_indexes = torch.topk(prob.view(out_logits.shape[0], -1), topk, dim=1)
+            valid = torch.zeros_like(scores, dtype=torch.bool)
+            topk_boxes = topk_indexes // out_logits.shape[2]
+            topk_labels = topk_indexes % out_logits.shape[2]
+            for i in range(len(valid)):
+                valid[i].scatter_(0, topk_boxes[i], True)
 
         if distillation:
             boxes = out_bbox
         else:
             boxes = box_ops.box_cxcywh_to_xyxy(out_bbox)
-        boxes = torch.gather(boxes, 1, topk_boxes.unsqueeze(-1).repeat(1,1,4))
 
-        # and from relative [0, 1] to absolute [0, height] coordinates
-        if not distillation:
-            img_h, img_w = target_sizes.unbind(1)
-            scale_fct = torch.stack([img_w, img_h, img_w, img_h], dim=1)
-            boxes = boxes * scale_fct[:, None, :]
-
-        results = [{'scores': s, 'labels': l, 'boxes': b} for s, l, b in zip(scores, labels, boxes)]
+        results = []
+        for i in range(len(scores)):
+            v = valid[i]
+            s = scores[i][v]
+            l = labels[i][v] if score_threshold > 0 else topk_labels[i]
+            b = boxes[i][v]
+            if not distillation:
+                img_h, img_w = target_sizes[i].unbind(0)
+                scale_fct = torch.tensor([img_w, img_h, img_w, img_h], device=b.device)
+                b = b * scale_fct[None, :]
+            results.append({'scores': s, 'labels': l, 'boxes': b})
 
         return results
 
