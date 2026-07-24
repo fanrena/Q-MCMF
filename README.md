@@ -16,7 +16,7 @@ We propose a Quality-guided Min-Cost Max-Flow (Q-MCMF) matcher for incremental o
 <p align="center">
   <img src="resource/main_framework.png" alt="Q-MCMF++ Framework" width="100%"/>
   <br>
-  <em>Overall framework of Q-MCMF++. The left branch performs object detection with Q-MCMF matcher replacing Hungarian matching for label assignment. The right branch replays class-wise prototypes via one-to-many Q-MCMF matching.</em>
+  <em>Main framework of our method. Two branches are included in the training pipeline. The first branch corresponds to the original detection pipeline, where the standard Hungarian matcher is replaced by our proposed Q-MCMF matcher. Pseudo-labeling and basic knowledge distillation are applied as fundamental anti-forgetting measures. Pseudo-labeling strategy is adopted only under the co-occurrence scenario. The second branch illustrates our prototype replay strategy, which constructs class-wise prototypes by decoupling feature aggregation from learnable projections in deformable attention, and repurposes Q-MCMF in a one-to-many configuration (right part of the flow network) to selectively associate each prototype with compatible queries. The lower part of the figure shows the detailed pipeline of prototype generation and its replay process in Deformable Attention (DeformAttn replay).</em>
 </p>
 
 - **Background Foregrounding.** We identify that the exhaustive Hungarian matching in DETR forces geometrically implausible prediction-target assignments, causing erroneous supervision that leads to catastrophic forgetting.

@@ -58,9 +58,16 @@ class COCO:
         # Determine which classes are active this phase
         if data_setting == 'class_split':
             if val_each_phase:
-                selected_cls_this_phase = cls_order[phase_idx * cls_per_phase : (phase_idx + 1) * cls_per_phase]
+                if phase_idx == 0:
+                    selected_cls_this_phase = cls_order[:args.base_cls]
+                else:
+                    selected_cls_this_phase = cls_order[args.base_cls + (phase_idx - 1) * cls_per_phase:
+                                                        args.base_cls + phase_idx * cls_per_phase]
             else:
-                selected_cls_this_phase = cls_order[: (phase_idx + 1) * cls_per_phase]
+                if phase_idx == 0:
+                    selected_cls_this_phase = cls_order[:args.base_cls]
+                else:
+                    selected_cls_this_phase = cls_order[:args.base_cls + phase_idx * cls_per_phase]
         else:  # image_split
             if phase_idx == 0:
                 selected_cls_this_phase = cls_order[:args.base_cls]
