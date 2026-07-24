@@ -16,12 +16,17 @@ We propose a Quality-guided Min-Cost Max-Flow (Q-MCMF) matcher for incremental o
 <p align="center">
   <img src="resource/main_framework.png" alt="Q-MCMF++ Framework" width="100%"/>
   <br>
-  <em>Main framework of our method. Two branches are included in the training pipeline. The first branch corresponds to the original detection pipeline, where the standard Hungarian matcher is replaced by our proposed Q-MCMF matcher. Pseudo-labeling and basic knowledge distillation are applied as fundamental anti-forgetting measures. Pseudo-labeling strategy is adopted only under the co-occurrence scenario. The second branch illustrates our prototype replay strategy, which constructs class-wise prototypes by decoupling feature aggregation from learnable projections in deformable attention, and repurposes Q-MCMF in a one-to-many configuration (right part of the flow network) to selectively associate each prototype with compatible queries. The lower part of the figure shows the detailed pipeline of prototype generation and its replay process in Deformable Attention (DeformAttn replay).</em>
+  <small><em>Main framework of our method. Two branches are included in the training pipeline. The first branch corresponds to the original detection pipeline, where the standard Hungarian matcher is replaced by our proposed Q-MCMF matcher. Pseudo-labeling and basic knowledge distillation are applied as fundamental anti-forgetting measures. Pseudo-labeling strategy is adopted only under the co-occurrence scenario. The second branch illustrates our prototype replay strategy, which constructs class-wise prototypes by decoupling feature aggregation from learnable projections in deformable attention, and repurposes Q-MCMF in a one-to-many configuration (right part of the flow network) to selectively associate each prototype with compatible queries. The lower part of the figure shows the detailed pipeline of prototype generation and its replay process in Deformable Attention (DeformAttn replay).</em></small>
 </p>
 
-- **Background Foregrounding.** We identify that the exhaustive Hungarian matching in DETR forces geometrically implausible prediction-target assignments, causing erroneous supervision that leads to catastrophic forgetting.
-- **Q-MCMF Matcher.** We reformulate label assignment as a min-cost max-flow problem with quality-guided edge pruning, eliminating implausible matches while preserving valid one-to-one correspondence.
-- **Prototype Replay (Q-MCMF++).** To handle non-co-occurrence scenarios, we introduce a prototype replay mechanism with decoupled feature aggregation. Q-MCMF is repurposed in a one-to-many configuration for selective query-prototype matching.
+**Contributions:**
+- We identify **background foregrounding**, a novel forgetting mechanism in DETR-based IOD caused by exhaustive Hungarian matching. To address it, we propose the **Q-MCMF matcher**, which reformulates label assignment as a min-cost max-flow problem and uses quality-guided edge pruning to eliminate implausible matches while preserving valid ones.
+- To handle **non-co-occurrence scenarios**, we introduce a **prototype replay mechanism** that constructs class-wise prototypes via decoupled feature aggregation in deformable attention and selectively replays them with a repurposed one-to-many Q-MCMF matcher for query-prototype matching.
+- Our unified framework achieves **state-of-the-art performance** on COCO across both co-occurrence and non-co-occurrence incremental settings, demonstrating effective mitigation of catastrophic forgetting.
+
+**Paper Version Comparison:**
+- **Q-MCMF (AAAI 2026)** — Conference version. Introduced Q-MCMF as a one-to-one matcher to address background foregrounding under the co-occurrence assumption.
+- **Q-MCMF++ (This Repository)** — Journal extension. Equips DETR with comprehensive anti-forgetting capabilities for both co-occurrence and non-co-occurrence scenarios: (1) extends Q-MCMF from one-to-one to flexible multi-topology matching; (2) introduces prototype replay with decoupled feature aggregation and dynamic edge pruning; (3) conducts comprehensive experiments under the non-co-occurrence protocol including multi-step settings and evaluations across different DETR backbones.
 
 ## 🚀 Getting Started
 
