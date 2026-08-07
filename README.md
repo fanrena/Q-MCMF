@@ -30,7 +30,7 @@ We propose a Quality-guided Min-Cost Max-Flow (Q-MCMF) matcher for incremental o
 
 ## 🚀 Getting Started
 
-This is the preliminary code release for the **Q-MCMF** conference paper. The full **Q-MCMF++** code will be released within two weeks (by **August 7, 2026**). ⏳
+This is the preliminary code release for the **Q-MCMF** conference paper. The full **Q-MCMF++** code will be released within three weeks (by **August 14, 2026**). ⏳
 
 ### Installation
 
